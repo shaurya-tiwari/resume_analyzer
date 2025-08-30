@@ -1,26 +1,25 @@
 import re
 
 
-# -------------------------------
-# Extract skills with exact match
-# -------------------------------
 def extract_skills(tokens, skills_db):
-    """Check tokens against SKILLS_DB with exact word match & special rules for short skills"""
+    """
+    Extract skills from tokens using exact match + context rules.
+    """
     found = set()
     text = " ".join(tokens)
 
     for skill in skills_db:
         pattern = r"\b" + re.escape(skill.lower()) + r"\b"
 
-        # --- Special Case Handling ---
+        # Special case: short skills like "c", "r"
         if skill.lower() in ["c", "r", "go"]:
             if re.search(pattern, text):
-                # Must have "language" or "programming" context
-                context_pattern = (
-                    r"\b" + re.escape(skill.lower()) + r"\b\s+(language|programming)"
+                # Check context: must have "language" or "programming"
+                context_pattern = r"(language|programming)\s+" + re.escape(
+                    skill.lower()
                 )
                 context_pattern2 = (
-                    r"(language|programming)\s+\b" + re.escape(skill.lower()) + r"\b"
+                    re.escape(skill.lower()) + r"\s+(language|programming)"
                 )
                 if re.search(context_pattern, text) or re.search(
                     context_pattern2, text
@@ -33,21 +32,17 @@ def extract_skills(tokens, skills_db):
     return list(found)
 
 
-# -------------------------------
-# Weighted Job Fit Scoring
-# -------------------------------
 def calculate_weighted_score(resume_skills, jd_skills):
     """
-    Weighted scoring system:
+    Weighted scoring:
     - Tech Skills: 70%
     - Soft Skills: 20%
-    - Bonus Skills (DevOps/Cloud/DB): 10%
+    - Bonus Skills: 10%
     """
-
     matched = set(resume_skills) & set(jd_skills)
     missing = set(jd_skills) - set(resume_skills)
 
-    # Define categories
+    # Categories
     tech_keywords = {
         "python",
         "java",
@@ -103,18 +98,14 @@ def calculate_weighted_score(resume_skills, jd_skills):
     }
 
     # Scores
-    tech_matched = matched & tech_keywords
-    soft_matched = matched & soft_keywords
-    bonus_matched = matched & bonus_keywords
-
     total_score = 0
     if jd_skills:
-        tech_score = (len(tech_matched) / len(jd_skills)) * 70
-        soft_score = (len(soft_matched) / len(jd_skills)) * 20
-        bonus_score = (len(bonus_matched) / len(jd_skills)) * 10
+        tech_score = (len(matched & tech_keywords) / len(jd_skills)) * 70
+        soft_score = (len(matched & soft_keywords) / len(jd_skills)) * 20
+        bonus_score = (len(matched & bonus_keywords) / len(jd_skills)) * 10
         total_score = round(tech_score + soft_score + bonus_score, 2)
 
-    # Eligibility classification
+    # Status
     if total_score >= 80:
         status = "✅ Strong Match - Highly Eligible"
     elif total_score >= 50:

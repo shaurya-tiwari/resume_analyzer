@@ -1,9 +1,9 @@
 import streamlit as st
 import pdfplumber
 import docx
+import re
 from utils import extract_skills, calculate_weighted_score
 from skills_db import SKILLS_DB
-
 
 # -------------------------------
 # Functions to extract text
@@ -17,23 +17,18 @@ def extract_text_from_pdf(uploaded_file):
                 text += page_text + "\n"
     return text
 
-
 def extract_text_from_docx(uploaded_file):
     doc = docx.Document(uploaded_file)
-    text = "\n".join([para.text for para in doc.paragraphs])
-    return text
+    return "\n".join([para.text for para in doc.paragraphs])
 
-
-# Simple text cleaner
+# Better cleaner
 def clean_text(text):
-    tokens = text.lower().split()
-    return [t.strip(".,:;!?()[]{}") for t in tokens if t.isalpha() or t.isalnum()]
-
+    return re.findall(r"[a-zA-Z+#]+", text.lower())
 
 # -------------------------------
 # Streamlit App
 # -------------------------------
-st.title("📄 AI Resume Analyzer (Practical Edition)")
+st.title("📄 AI Resume Analyzer (Improved Edition)")
 
 col1, col2 = st.columns(2)
 
@@ -49,10 +44,7 @@ resume_text = ""
 if resume_file is not None:
     if resume_file.type == "application/pdf":
         resume_text = extract_text_from_pdf(resume_file)
-    elif (
-        resume_file.type
-        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ):
+    elif resume_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
         resume_text = extract_text_from_docx(resume_file)
 
 if st.button("🔍 Analyze"):
@@ -63,10 +55,7 @@ if st.button("🔍 Analyze"):
         resume_skills = extract_skills(resume_tokens, SKILLS_DB)
         jd_skills = extract_skills(jd_tokens, SKILLS_DB)
 
-        # Weighted Scoring
-        job_fit, status, matched, missing = calculate_weighted_score(
-            resume_skills, jd_skills
-        )
+        job_fit, status, matched, missing = calculate_weighted_score(resume_skills, jd_skills)
 
         # Results Section
         st.subheader("📊 Job Fit Score:")
@@ -74,23 +63,12 @@ if st.button("🔍 Analyze"):
         st.success(f"Your Resume matches {job_fit}% with the Job Description")
         st.info(status)
 
-        # Smart Recommendation Paragraph
-        recommendation = ""
-
-        if matched:
-            recommendation += (
-                f"✅ Your resume already highlights strengths in {', '.join(matched)}. "
-            )
-
-        if missing:
-            recommendation += f"⚠️ However, you are missing important skills like {', '.join(missing)}. "
-            recommendation += "Consider adding projects, certifications, or internships that demonstrate these skills. "
-
-        if not matched and not missing:
-            recommendation = "⚠️ No major relevant skills detected in your resume. Try tailoring it with more job-related keywords."
-
-        if not missing:
-            recommendation += " 🎉 Great job! Your resume already covers the critical skills required for this role."
-
+        # Recommendations
         st.subheader("💡 Personalized Recommendation:")
-        st.write(recommendation)
+        if matched:
+            st.write(f"✅ Strengths: {', '.join(matched)}")
+        if missing:
+            st.write(f"⚠️ Missing: {', '.join(missing)}")
+            st.write("👉 Add relevant projects, certifications, or internships for these skills.")
+        if not matched and not missing:
+            st.write("⚠️ No major relevant skills detected. Tailor resume with job-related keywords.")
