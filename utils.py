@@ -195,12 +195,12 @@ def analyze_resume_quality_pplx(resume_text):
     prompt = f"""
 You are an ATS and resume expert. Analyze this resume:
 
-{resume_text[:1500]}
+{resume_text[:4000]}
 
 Return a clear report with:
 - ATS-friendly? (yes/no with reason)
 - Missing key sections (skills, projects, education, etc.)
-- General suggestions to improve ATS ranking and clarity , nd try to keep answer short an clear .
+- General suggestions to improve ATS ranking and clarity , nd try to keep answer short an clear and also say that what points i can skip but  what are  the essesntial improvemnt before upploading  the resume  .
 """
 
     payload = {
