@@ -11,9 +11,8 @@ from skills_db import ALL_SKILLS, TECH_SKILLS, SOFT_SKILLS, DEVOPS_CLOUD_SKILLS
 try:
     nlp = spacy.load("en_core_web_sm")
 except OSError:
-    download("en_core_web_sm")
+    download("en_core_web_sm")  # downloads to user space
     nlp = spacy.load("en_core_web_sm")
-
 # Load .env
 load_dotenv()
 PPLX_API_KEY = os.getenv("PERPLEXITY_API_KEY")
