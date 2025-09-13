@@ -2,11 +2,17 @@
 import os
 import requests
 import spacy
+from spacy.cli import download
 from dotenv import load_dotenv
 from skills_db import ALL_SKILLS, TECH_SKILLS, SOFT_SKILLS, DEVOPS_CLOUD_SKILLS
 
 # Load spaCy
-nlp = spacy.load("en_core_web_sm")
+# Load or download the English model
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
 
 # Load .env
 load_dotenv()
