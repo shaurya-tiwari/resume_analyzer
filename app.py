@@ -33,7 +33,7 @@ def extract_text_from_docx(uploaded_file):
     return "\n".join([p.text for p in doc.paragraphs])
 
 
-# -------------------------------
+# -------------------------------teh thing which are sam to me that 
 # Streamlit UI
 # -------------------------------
 st.set_page_config(page_title="AI Resume Analyzer", page_icon="📄", layout="wide")

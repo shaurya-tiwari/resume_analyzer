@@ -65,8 +65,8 @@ def semantic_skill_match(resume_text: str, job_description: str):
         Extract SKILLS, TOOLS, FRAMEWORKS only (ignore soft words).
         Return strictly JSON like:
         {{
-          "matched": [...],
-          "missing": [...]
+            "matched": [...],
+            "missing": [...]hm
         }}
 
         Resume:
